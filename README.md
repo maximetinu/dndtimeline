@@ -24,20 +24,29 @@ docs/                                        # <- esto es lo que sirve GitHub Pa
   images/        (generado, .webp optimizadas)
 ```
 
-## 🔄 Cómo actualizar
+## 🔄 Cómo actualizar (automático)
 
 1. Edita el timeline en LegendKeeper y exporta de nuevo, reemplazando
    `Tierras perdidas, sueños encontrados.json`.
-2. Regenera el sitio:
-   ```bash
-   python3 build.py
-   ```
-   (Usa `cwebp` para optimizar imágenes si está instalado: `brew install webp`.)
-3. Sube los cambios:
+2. Sube el cambio:
    ```bash
    git add -A && git commit -m "Update timeline" && git push
    ```
-4. GitHub Pages se actualiza solo tras el push (sirve directamente la carpeta `docs/`).
+
+¡Y ya está! Un **GitHub Action** (`.github/workflows/deploy.yml`) corre `build.py`
+en la nube en cada push, regenera `docs/data.js` + `docs/images/` y despliega a
+GitHub Pages automáticamente. No necesitas correr nada en local.
+
+> Los archivos generados (`docs/data.js`, `docs/images/`) están en `.gitignore`
+> a propósito: los reconstruye el Action, no se commitean.
+
+### Previsualizar en local (opcional)
+
+```bash
+python3 build.py          # genera docs/data.js + docs/images/
+cd docs && python3 -m http.server 8000   # abre http://localhost:8000
+```
+(`build.py` usa `cwebp` para optimizar imágenes si está instalado: `brew install webp`.)
 
 ## ⚙️ Detalles técnicos
 
