@@ -65,42 +65,53 @@
   document.getElementById("event-count").textContent =
     data.events.length + " eventos";
 
-  // ---- lightbox ---------------------------------------------------------
+  // ---- detail modal -----------------------------------------------------
   var lightbox = el("div", "lightbox");
   lightbox.setAttribute("role", "dialog");
   lightbox.setAttribute("aria-modal", "true");
   lightbox.innerHTML =
     '<button class="lb-close" aria-label="Cerrar">&times;</button>' +
     '<figure class="lb-figure">' +
+    '<div class="lb-icon" aria-hidden="true">' + CALENDAR_ICON + "</div>" +
     '<img class="lb-img" alt="" />' +
     '<figcaption class="lb-cap"><span class="lb-name"></span><span class="lb-date"></span></figcaption>' +
     "</figure>";
   document.body.appendChild(lightbox);
+  var lbIcon = lightbox.querySelector(".lb-icon");
   var lbImg = lightbox.querySelector(".lb-img");
   var lbName = lightbox.querySelector(".lb-name");
   var lbDate = lightbox.querySelector(".lb-date");
 
-  function openLightbox(src, name, date) {
-    lbImg.src = src;
-    lbImg.alt = name || "";
-    lbName.textContent = name || "";
-    lbDate.textContent = date || "";
+  function openDetail(ev) {
+    if (ev.image) {
+      lbImg.src = ev.image;
+      lbImg.alt = ev.name || "";
+      lbImg.style.display = "";
+      lbIcon.style.display = "none";
+    } else {
+      lbImg.removeAttribute("src");
+      lbImg.style.display = "none";
+      lbIcon.style.display = "";
+      lbIcon.style.color = ev.color || "#0099ff";
+    }
+    lbName.textContent = ev.name || "";
+    lbDate.textContent = ev.dateText || "";
     lightbox.classList.add("open");
     document.body.style.overflow = "hidden";
   }
-  function closeLightbox() {
+  function closeDetail() {
     lightbox.classList.remove("open");
     document.body.style.overflow = "";
-    lbImg.src = "";
+    lbImg.removeAttribute("src");
   }
   lightbox.addEventListener("click", function (e) {
     // close when clicking the backdrop or the close button (not the image itself)
     if (e.target === lightbox || e.target.classList.contains("lb-close")) {
-      closeLightbox();
+      closeDetail();
     }
   });
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && lightbox.classList.contains("open")) closeLightbox();
+    if (e.key === "Escape" && lightbox.classList.contains("open")) closeDetail();
   });
 
   // ---- render events ----------------------------------------------------
@@ -150,7 +161,7 @@
         rgba(base, 0.35);
       card.appendChild(scrim);
 
-      // expand hint icon (top-right)
+      // expand hint icon (top-right, desktop hover)
       var hint = el(
         "div",
         "expand-hint",
@@ -158,13 +169,20 @@
           '<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>'
       );
       card.appendChild(hint);
-
-      (function (image, name, date) {
-        card.addEventListener("click", function () {
-          openLightbox(image, name, date);
-        });
-      })(ev.image, ev.name, ev.dateText);
     }
+
+    // mobile date pill (year + relative gap) — replaces the side column on phones
+    var meta = el("div", "card-meta");
+    meta.appendChild(el("span", "cm-year", "")).textContent = ev.dateText || "";
+    if (ev.rel) meta.appendChild(el("span", "cm-rel", "")).textContent = ev.rel;
+    card.appendChild(meta);
+
+    // every event opens its detail view
+    (function (event) {
+      card.addEventListener("click", function () {
+        openDetail(event);
+      });
+    })(ev);
 
     var inner = el("div", "inner");
     inner.appendChild(el("div", "icon", CALENDAR_ICON));
@@ -192,4 +210,20 @@
   end.appendChild(endNode);
   end.appendChild(el("div", "", ""));
   chronicle.appendChild(end);
+
+  // ---- scroll-to-top button --------------------------------------------
+  var toTop = el(
+    "button",
+    "to-top",
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>'
+  );
+  toTop.setAttribute("aria-label", "Volver arriba");
+  document.body.appendChild(toTop);
+  toTop.addEventListener("click", function () {
+    chronicle.scrollTo({ top: 0, behavior: "smooth" });
+  });
+  chronicle.addEventListener("scroll", function () {
+    toTop.classList.toggle("show", chronicle.scrollTop > 600);
+  });
+
 })();
