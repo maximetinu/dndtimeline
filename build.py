@@ -116,9 +116,9 @@ def convert_image(data_uri, out_path):
         tmp_path = tmp.name
     try:
         if have_cwebp():
-            # cap width at 700px, quality 80 — cards render small
+            # cap width at 1200px, quality 80 — small enough for cards, crisp in the lightbox
             r = subprocess.run(
-                ["cwebp", "-quiet", "-q", "80", "-resize", "700", "0", tmp_path, "-o", out_path],
+                ["cwebp", "-quiet", "-q", "80", "-resize", "1200", "0", tmp_path, "-o", out_path],
                 capture_output=True,
             )
             if r.returncode == 0 and os.path.exists(out_path):

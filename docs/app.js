@@ -65,6 +65,44 @@
   document.getElementById("event-count").textContent =
     data.events.length + " eventos";
 
+  // ---- lightbox ---------------------------------------------------------
+  var lightbox = el("div", "lightbox");
+  lightbox.setAttribute("role", "dialog");
+  lightbox.setAttribute("aria-modal", "true");
+  lightbox.innerHTML =
+    '<button class="lb-close" aria-label="Cerrar">&times;</button>' +
+    '<figure class="lb-figure">' +
+    '<img class="lb-img" alt="" />' +
+    '<figcaption class="lb-cap"><span class="lb-name"></span><span class="lb-date"></span></figcaption>' +
+    "</figure>";
+  document.body.appendChild(lightbox);
+  var lbImg = lightbox.querySelector(".lb-img");
+  var lbName = lightbox.querySelector(".lb-name");
+  var lbDate = lightbox.querySelector(".lb-date");
+
+  function openLightbox(src, name, date) {
+    lbImg.src = src;
+    lbImg.alt = name || "";
+    lbName.textContent = name || "";
+    lbDate.textContent = date || "";
+    lightbox.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeLightbox() {
+    lightbox.classList.remove("open");
+    document.body.style.overflow = "";
+    lbImg.src = "";
+  }
+  lightbox.addEventListener("click", function (e) {
+    // close when clicking the backdrop or the close button (not the image itself)
+    if (e.target === lightbox || e.target.classList.contains("lb-close")) {
+      closeLightbox();
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && lightbox.classList.contains("open")) closeLightbox();
+  });
+
   // ---- render events ----------------------------------------------------
   var chronicle = document.getElementById("chronicle");
   var frag = document.createDocumentFragment();
@@ -101,6 +139,7 @@
     card.style.borderColor = strokeStr;
 
     if (ev.image) {
+      card.classList.add("has-image");
       var bg = el("div", "bg-img");
       bg.style.backgroundImage = 'url("' + ev.image + '")';
       card.appendChild(bg);
@@ -110,6 +149,21 @@
         "linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%), " +
         rgba(base, 0.35);
       card.appendChild(scrim);
+
+      // expand hint icon (top-right)
+      var hint = el(
+        "div",
+        "expand-hint",
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>'
+      );
+      card.appendChild(hint);
+
+      (function (image, name, date) {
+        card.addEventListener("click", function () {
+          openLightbox(image, name, date);
+        });
+      })(ev.image, ev.name, ev.dateText);
     }
 
     var inner = el("div", "inner");

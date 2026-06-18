@@ -207,6 +207,7 @@ body {
   .card { margin-right: 64px; }
 }
 .card:hover { box-shadow: 0 0 0 2px var(--fg); }
+.card.has-image { cursor: pointer; }
 
 .card .bg-img {
   position: absolute;
@@ -214,7 +215,29 @@ body {
   background-size: cover;
   background-position: center;
   z-index: 0;
+  transition: transform 0.35s ease;
 }
+.card.has-image:hover .bg-img { transform: scale(1.06); }
+
+/* expand hint icon shown on image cards */
+.card .expand-hint {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.card .expand-hint svg { width: 16px; height: 16px; }
+.card.has-image:hover .expand-hint { opacity: 1; }
 /* darken gradient so text stays readable over images */
 .card .scrim {
   position: absolute;
@@ -288,3 +311,60 @@ body {
 @media (max-width: 520px) {
   .node { display: none; }
 }
+
+/* ---- Lightbox ---- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 4vh 4vw;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.lightbox.open { display: flex; }
+.lb-figure {
+  margin: 0;
+  max-width: 92vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.lb-img {
+  max-width: 92vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.lb-cap {
+  text-align: center;
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 80ch;
+}
+.lb-name { font-weight: 600; font-size: 15px; }
+.lb-date { font-size: 12px; color: var(--muted); }
+.lb-close {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.lb-close:hover { background: rgba(255, 255, 255, 0.22); }
